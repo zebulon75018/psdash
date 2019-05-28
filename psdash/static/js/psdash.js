@@ -1,4 +1,10 @@
 
+function filesizeformat  (bytes) {
+  if (bytes == 0) { return "0.00 B"; }
+  var e = Math.floor(Math.log(bytes) / Math.log(1024));
+  return (bytes/Math.pow(1024, e)).toFixed(2)+' '+' KMGTP'.charAt(e)+'B';
+}
+
 function escape_regexp(str) {
   return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 }
@@ -120,16 +126,109 @@ function init_updater() {
         if (skip_updates) return;
 
         $.ajax({
-            url: location.href,
+            url: "/json"+location.pathname,
             cache: false,
             dataType: "html",
             success: function(resp){
-                $("#psdash").find(".main-content").html(resp);
+              var data = JSON.parse(resp);
+	      //console.log(data);
+              if (data["type"]=="process") {
+		//console.log(data["data"]);
+		ddata = [];
+		for( var i= 0; i< data["data"].length; i++)
+		{
+		   d = data["data"][i];
+		   ddata.push([ d["pid"],d["name"],d["user"],d["status"],d["created"],"","",d["mem_percent"],d["cpu_percent"]]);
+		   //ddata.push([ "","","","","","","","",""]);
+
+
+/*
+                          </td>
+                          <td>{{ p.user or "-" }}</td>
+                          <td>{{ p.status }}</td>
+                          <td>{{ p.created|fromtimestamp }}</td>
+                          <td>{{ p.mem_rss|filesizeformat }}</td>
+                          <td>{{ p.mem_vms|filesizeformat }}</td>
+                          <td>{{ p.mem_percent|round }}</td>
+                          <td>{{ p.cpu_percent }}</td>
+*/
+
+
+		}
+		console.log(ddata);
+		datatable.clear();
+    		datatable.rows.add(ddata);
+    		datatable.draw();
+		return;
+		}
+              for(var key in data) {
+		   if (typeof(data[key]) =="object")
+                   { 
+              		for(var key2 in data[key]) 
+			{
+				//console.log(data[key])
+		   		elm = $("."+key+key2);
+				if (elm.length ==0) { continue; }
+				if ( elm.attr("format") == "filesizeformat" ) {
+		   		    elm.html(filesizeformat(data[key][key2]));
+				} else {
+		   		    elm.html(data[key][key2]);
+				}
+			}
+	           }
+		   if (typeof(data[key]) =="number")
+		   {
+		   		$("."+key).html(data[key]);
+                   }
+		   if (typeof(data[key]) =="string")
+		   {
+		   		$("."+key).html(data[key]);
+                   }
+		   if ( Array.isArray(data[key]) )
+		   {
+
+		   	elm = $(".list"+key);
+			if (elm.length ==0) { 
+					continue;
+				}
+			if (typeof(elm.attr("data")) !="string")
+			{
+				continue;
+			}
+			allcol = elm.attr("data").split(" ")
+			allformat = [];
+			if ( elm.attr("format") !== undefined ) {
+				allformat = elm.attr("format").split(" ")
+			}
+			console.log(allformat);
+			result = ""
+			for (var i = 0; i < data[key].length; i++) { 
+			  result += "<tr>"
+			  n=0;
+              		  for(var key2 in allcol) 
+			  {
+				value = data[key][i][allcol[key2]];
+				if (allformat.length>n) {
+				     funcformat = allformat[n];
+				     if ( funcformat !="none" ) {
+					value = filesizeformat(value);
+					}
+				}
+				n++;
+                                result += "<td>"+value+"</td>\n"
+			  }
+                          result += "</tr>\n"
+			}
+			elm.html(result);
+                   }
+		}
+
+              //  $("#psdash").find(".main-content").html(resp);
             }
         });
     }
 
-    setInterval(update, 3000);
+    setInterval(update, 30000);
 }
 
 function init_connections_filter() {
@@ -153,9 +252,11 @@ function init_connections_filter() {
 $(document).ready(function() {
     init_connections_filter();
 
+    init_updater();
+	/*
     if($("#log").length == 0) {
         init_updater();
     } else {
         init_log();
-    }
+    } */
 });

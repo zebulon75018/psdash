@@ -8,6 +8,7 @@ import locale
 from flask import render_template, request, session, jsonify, Response, Blueprint, current_app, g
 from werkzeug.local import LocalProxy
 from psdash.helpers import socket_families, socket_types
+import json
 
 logger = logging.getLogger('psdash.web')
 webapp = Blueprint('psdash', __name__, static_folder='static')
@@ -29,6 +30,9 @@ def fromtimestamp(value, dateformat='%Y-%m-%d %H:%M:%S'):
     dt = datetime.fromtimestamp(int(value))
     return dt.strftime(dateformat)
 
+def human_size(bytes, units=[' bytes','KB','MB','GB','TB', 'PB', 'EB']):
+    """ Returns a human readable string reprentation of bytes"""
+    return str(bytes) + units[0] if bytes < 1024 else human_size(bytes>>10, units[1:])
 
 @webapp.context_processor
 def inject_nodes():
@@ -103,6 +107,53 @@ def access_denied(e):
     return render_template('error.html', error=errmsg), 404
 
 
+@webapp.route('/json/')
+def json():
+    sysinfo = current_service.get_sysinfo()
+
+    netifs = current_service.get_network_interfaces().values()
+    netifs.sort(key=lambda x: x.get('bytes_sent'), reverse=True)
+
+    data = {
+        'load_avg': "%.2f %.2f %.2f" % ( sysinfo['load_avg'][0], sysinfo['load_avg'][1], sysinfo['load_avg'][2]),
+        'num_cpus': sysinfo['num_cpus'],
+        'memory': current_service.get_memory(),
+        'swap': current_service.get_swap_space(),
+        'disks': current_service.get_disks(),
+        'cpu': current_service.get_cpu(),
+        'users': current_service.get_users(),
+        'net_interfaces': netifs,
+        'page': 'overview',
+        'is_xhr': request.is_xhr
+    }
+
+    return jsonify(data)
+
+@webapp.route('/json/processes', defaults={'sort': 'cpu_percent', 'order': 'desc', 'filter': 'user'})
+@webapp.route('/json/processes/<string:sort>')
+@webapp.route('/json/processes/<string:sort>/<string:order>')
+@webapp.route('/json/processes/<string:sort>/<string:order>/<string:filter>')
+def jsonprocesses(sort='pid', order='asc', filter='user'):
+    procs = current_service.get_process_list()
+    #print jsonify({"data":procs})
+    #pprint.pprint(procs)
+    """
+    num_procs = len(procs)
+
+    user_procs = [p for p in procs if p['user'] != 'root']
+    num_user_procs = len(user_procs)
+    if filter == 'user':
+        procs = user_procs
+
+    procs.sort(
+        key=lambda x: x.get(sort),
+        reverse=True if order != 'asc' else False
+    )
+    """
+
+    return jsonify({"data":procs,"type":"process"})
+
+
 @webapp.route('/')
 def index():
     sysinfo = current_service.get_sysinfo()
@@ -122,8 +173,9 @@ def index():
         'page': 'overview',
         'is_xhr': request.is_xhr
     }
+    #data = {}
 
-    return render_template('index.html', **data)
+    return render_template('index.html') #, **data)
 
 
 @webapp.route('/processes', defaults={'sort': 'cpu_percent', 'order': 'desc', 'filter': 'user'})

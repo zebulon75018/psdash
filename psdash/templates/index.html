@@ -9,27 +9,27 @@
                 <table class="table">
                     <tr>
                         <td class="label-col">Load average</td>
-                        <td class="load" style="word-spacing: 10px;">{{ load_avg[0]|round(2) }} {{ load_avg[1]|round(2) }} {{ load_avg[2]|round(2) }}</td>
+                        <td class="load " style="word-spacing: 10px;"><span class="load_avg"></span></td>
                     </tr>
                     <tr>
                         <td class="label-col">User</td>
-                        <td class="user">{{ cpu.user }} %</td>
+                        <td class="user"><span class="cpuuser">...</span> %</td>
                     </tr>
                     <tr>
                         <td class="label-col">System</td>
-                        <td class="system">{{ cpu.system }} %</td>
+                        <td class="system"><span class="cpusystem">...</span> %</td>
                     </tr>
                     <tr>
                         <td class="label-col">Idle</td>
-                        <td class="idle">{{ cpu.idle }} %</td>
+                        <td class="idle"><span class="cpuidle">...</span>  %</td>
                     </tr>
                     <tr>
                         <td class="label-col">I/O wait</td>
-                        <td class="iowait">{{ cpu.iowait }} %</td>
+                        <td class="iowait"><span class="cpuiowait">...</span> %</td>
                     </tr>
                     <tr>
                         <td class="label-col">Cores</td>
-                        <td class="iowait">{{ num_cpus }}</td>
+                        <td class="iowait"><span class="num_cpus">...</span></td>
                     </tr>
                 </table>
             </div>
@@ -42,23 +42,23 @@
                 <table class="table">
                     <tr>
                         <td class="label-col">Total</td>
-                        <td class="total">{{ memory.total|filesizeformat }}</td>
+                        <td class="total"><span class="memorytotal" format="filesizeformat">...</span></td>
                     </tr>
                     <tr>
                         <td class="label-col">Available</td>
-                        <td class="available">{{ memory.available|filesizeformat }}</td>
+                        <td class="available"><span class="memoryavailable"  format="filesizeformat">...</span></td>
                     </tr>
                     <tr>
                         <td class="label-col">Used <small>(excl. cache &amp; buffers)</small></td>
-                        <td class="used_excl">{{ (memory.total - memory.available)|filesizeformat }} ({{ memory.percent }} %)</td>
+                        <td class="used_excl"><span class="(memory.total - memory.available)">...</span>(<span class="memorypercent">...</span>  %)</td>
                     </tr>
                     <tr>
                         <td class="label-col">Used <small>(incl. cache &amp; buffers)</small></td>
-                        <td class="used_incl">{{ memory.used|filesizeformat }}</td>
+                        <td class="used_incl"><span class="memoryused"  format="filesizeformat">...</span></td>
                     </tr>
                     <tr>
                         <td class="label-col">Free</td>
-                        <td class="free">{{ memory.free|filesizeformat }}</td>
+                        <td class="free"><span class="memoryfree"  format="filesizeformat">...</span></td>
                     </tr>
                 </table>
             </div>
@@ -77,15 +77,7 @@
                             <th>TX/s</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% for ni in net_interfaces %}
-                            <tr>
-                                <td>{{ ni.name.decode("utf-8") }}</td>
-                                <td>{{ ni.ip }}</td>
-                                <td>{{ ni.send_rate|default(0)|filesizeformat }}</td>
-                                <td>{{ ni.recv_rate|default(0)|filesizeformat }}</td>
-                            </tr>
-                        {% endfor %}
+                    <tbody class="listnet_interfaces" data="name ip">
                     </tbody>
                 </table>
             </div>
@@ -105,16 +97,8 @@
                             <th>Free</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% for d in disks %}
-                            <tr>
-                                <td>{{ d.device }}</td>
-                                <td>{{ d.mountpoint.decode("utf-8") }}</td>
-                                <td>{{ d.space_total|filesizeformat }}</td>
-                                <td>{{ d.space_used|filesizeformat }} ({{ d.space_used_percent }} %)</td>
-                                <td>{{ d.space_free|filesizeformat }}</td>
-                            </tr>
-                        {% endfor %}
+                    <tbody class="listdisks" data="device mountpoint space_total space_used space_free"
+					     format="none none filesizeformat filesizeformat filesizeformat">
                     </tbody>
                 </table>
             </div>
@@ -127,23 +111,23 @@
                 <table class="table">
                     <tr>
                         <td class="label-col">Total</td>
-                        <td class="total">{{ swap.total|filesizeformat }}</td>
+                        <td class="total"><span class="swaptotal" format="filesizeformat">...</span></td>
                     </tr>
                     <tr>
                         <td class="label-col">Used</td>
-                        <td class="used">{{ swap.used|filesizeformat }} ({{ swap.percent }} %)</td>
+                        <td class="used"><span class="swapused" format="filesizeformat">...</span> (<span class="swappercent">...</span>)</td>
                     </tr>
                     <tr>
                         <td class="label-col">Free</td>
-                        <td class="free">{{ swap.free|filesizeformat }}</td>
+                        <td class="free"><span class="swapfree" format="filesizeformat">...</span> </td>
                     </tr>
                     <tr>
                         <td class="label-col">Swapped in</td>
-                        <td class="swapped-in">{{ swap.swapped_in|filesizeformat }}</td>
+                        <td class="swapped-in"><span class="swapswapped_in"  format="filesizeformat">...</span> </td>
                     </tr>
                     <tr>
                         <td class="label-col">Swapped out</td>
-                        <td class="swapped-out">{{ swap.swapped_out|filesizeformat }}</td>
+                        <td class="swapped-out"><span class="swapswapped_out" format="filesizeformat">...</span></td>
                     </tr>
                 </table>
             </div>
@@ -161,14 +145,7 @@
                             <th>Host</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% for u in users %}
-                            <tr>
-                                <td>{{ u.name.decode("utf-8") }}</td>
-                                <td>{{ u.started|fromtimestamp }}</td>
-                                <td>{{ u.host }}</td>
-                            </tr>
-                        {% endfor %}
+                    <tbody class="listusers" data="name started host">
                     </tbody>
                 </table>
             </div>

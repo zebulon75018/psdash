@@ -1,11 +1,44 @@
-{% if not is_xhr|default(false) %}{% extends "base.html" %}{% endif -%}
+{% if not is_xhr|default(false) %}
+{% extends "base.html" %}
+
+
+{% endif %}
 {% block content %}
-    {% set next_order = "desc" if order == "asc" else "asc" %}
-    {% if order == "asc" %}
-        {% set order_icon = '<span class="order-icon glyphicon glyphicon-chevron-up"></span>' %}
-    {% else %}
-        {% set order_icon = '<span class="order-icon glyphicon glyphicon-chevron-down"></span>' %}
-    {% endif %}
+<style>
+input {
+   width:80%;
+ }
+</style>
+<script>
+var datatable;
+$(document).ready( function () {
+    console.log(" Datatable ");
+    datatable = $('#myTable').DataTable();
+    $('#myTable thead th').each( function () {
+        var title = $(this).text();
+        $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+    } );
+
+    // Apply the search
+    datatable.columns().every( function () {
+        var that = this;
+ 
+	$('input', this.header()).on('keypress change', function(e) {
+      		var keycode = e.which;
+      		//launch search action only when enter is pressed
+      		if (keycode == '13') {
+        		console.log('enter key pressed !')
+        		if (that.search() !== this.value) {
+          			that
+            				.search(this.value)
+            				.draw();
+        			}
+      			}
+         } );
+    } );
+} );
+</script>
+
     <div id="processes" class="box">
         <div class="box-header">
             <span>Processes</span>
@@ -23,44 +56,35 @@
                     </a>
                 </li>
             </ul>
-            <table class="table table-hover">
+            <table id="myTable" class="table table-hover"  cellspacing="0" width="100%">
                 <thead>
                     <tr>
                         <th>
-                            <a href="{{ url_for(".processes", sort="pid", order=next_order, filter=filter) }}">PID</a>
-                            {{ order_icon|safe if sort == "pid"}}
+                            PID
                         </th>
                         <th>
-                            <a href="{{ url_for(".processes", sort="name", order=next_order, filter=filter) }}">Name</a>
-                            {{ order_icon|safe if sort == "name"}}
+                           Name
                         </th>
                         <th>
-                            <a href="{{ url_for(".processes", sort="user", order=next_order, filter=filter) }}">User</a>
-                            {{ order_icon|safe if sort == "user"}}
+                            User>
                         </th>
                         <th>
-                            <a href="{{ url_for(".processes", sort="status", order=next_order, filter=filter) }}">Status</a>
-                            {{ order_icon|safe if sort == "status"}}
+                            Status
                         </th>
                         <th>
-                            <a href="{{ url_for(".processes", sort="created", order=next_order, filter=filter) }}">Created</a>
-                            {{ order_icon|safe if sort == "created"}}
+                            Created
                         </th>
                         <th title="Resident Set Size">
-                            <a href="{{ url_for(".processes", sort="mem_rss", order=next_order, filter=filter) }}">RSS</a>
-                            {{ order_icon|safe if sort == "mem_rss"}}
+                            RSS
                         </th>
                         <th title="Virtual Memory Size">
-                            <a href="{{ url_for(".processes", sort="mem_vms", order=next_order, filter=filter) }}">VMS</a>
-                            {{ order_icon|safe if sort == "mem_vms"}}
+                            VMS
                         </th>
                         <th>
-                            <a href="{{ url_for(".processes", sort="mem_percent", order=next_order, filter=filter) }}">Memory %</a>
-                            {{ order_icon|safe if sort == "mem_percent"}}
+                            Memory %
                         </th>
                         <th>
-                            <a href="{{ url_for(".processes", sort="cpu_percent", order=next_order, filter=filter) }}">CPU %</a>
-                            {{ order_icon|safe if sort == "cpu_percent"}}
+                            CPU %
                         </th>
                     </tr>
                 </thead>
