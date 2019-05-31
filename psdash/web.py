@@ -107,6 +107,81 @@ def access_denied(e):
     return render_template('error.html', error=errmsg), 404
 
 
+@webapp.route('/json/logs')
+def json_view_logs():
+    available_logs = current_service.get_logs()
+    available_logs.sort(cmp=lambda x1, x2: locale.strcoll(x1['path'], x2['path']))
+
+    return jsonify({"logs":available_logs})
+
+    return render_template(
+        'logs.html',
+        page='logs',
+        logs=available_logs,
+        is_xhr=request.is_xhr
+    )
+
+
+@webapp.route('/json/disks')
+def json_view_disks():
+    disks = current_service.get_disks(all_partitions=True)
+    io_counters = current_service.get_disks_counters().items()
+    io_counters.sort(key=lambda x: x[1]['read_count'], reverse=True)
+    ic = []
+    for name,tab in io_counters:
+	tab["name"] = name
+	ic.append(tab)
+    return jsonify({"disks":disks,"ioc":ic})
+
+@webapp.route('/json/network')
+def json_view_networks():
+    netifs = current_service.get_network_interfaces().values()
+    netifs.sort(key=lambda x: x.get('bytes_sent'), reverse=True)
+
+    # {'key', 'default_value'}
+    # An empty string means that no filtering will take place on that key
+    form_keys = {
+        'pid': '', 
+        'family': socket_families[socket.AF_INET],
+        'type': socket_types[socket.SOCK_STREAM],
+        'state': 'LISTEN'
+    }
+
+    form_values = dict((k, request.args.get(k, default_val)) for k, default_val in form_keys.iteritems())
+
+    for k in ('local_addr', 'remote_addr'):
+        val = request.args.get(k, '')
+        if ':' in val:
+            host, port = val.rsplit(':', 1)
+            form_values[k + '_host'] = host
+            form_values[k + '_port'] = int(port)
+        elif val:
+            form_values[k + '_host'] = val
+
+    conns = current_service.get_connections(form_values)
+    conns.sort(key=lambda x: x['state'])
+
+    states = [
+        'ESTABLISHED', 'SYN_SENT', 'SYN_RECV',
+        'FIN_WAIT1', 'FIN_WAIT2', 'TIME_WAIT',
+        'CLOSE', 'CLOSE_WAIT', 'LAST_ACK',
+        'LISTEN', 'CLOSING', 'NONE'
+    ]
+
+    return jsonify(
+        page='network',
+        network_interfaces=netifs,
+        connections=conns,
+        socket_families=socket_families,
+        socket_types=socket_types,
+        states=states,
+        num_conns=len(conns),
+        **form_values
+    )
+
+
+
+
 @webapp.route('/json/')
 def json():
     sysinfo = current_service.get_sysinfo()
@@ -130,52 +205,15 @@ def json():
     return jsonify(data)
 
 @webapp.route('/json/processes', defaults={'sort': 'cpu_percent', 'order': 'desc', 'filter': 'user'})
-@webapp.route('/json/processes/<string:sort>')
-@webapp.route('/json/processes/<string:sort>/<string:order>')
 @webapp.route('/json/processes/<string:sort>/<string:order>/<string:filter>')
 def jsonprocesses(sort='pid', order='asc', filter='user'):
     procs = current_service.get_process_list()
-    #print jsonify({"data":procs})
-    #pprint.pprint(procs)
-    """
-    num_procs = len(procs)
-
-    user_procs = [p for p in procs if p['user'] != 'root']
-    num_user_procs = len(user_procs)
-    if filter == 'user':
-        procs = user_procs
-
-    procs.sort(
-        key=lambda x: x.get(sort),
-        reverse=True if order != 'asc' else False
-    )
-    """
-
     return jsonify({"data":procs,"type":"process"})
 
 
 @webapp.route('/')
 def index():
-    sysinfo = current_service.get_sysinfo()
-
-    netifs = current_service.get_network_interfaces().values()
-    netifs.sort(key=lambda x: x.get('bytes_sent'), reverse=True)
-
-    data = {
-        'load_avg': sysinfo['load_avg'],
-        'num_cpus': sysinfo['num_cpus'],
-        'memory': current_service.get_memory(),
-        'swap': current_service.get_swap_space(),
-        'disks': current_service.get_disks(),
-        'cpu': current_service.get_cpu(),
-        'users': current_service.get_users(),
-        'net_interfaces': netifs,
-        'page': 'overview',
-        'is_xhr': request.is_xhr
-    }
-    #data = {}
-
-    return render_template('index.html') #, **data)
+    return render_template('index.html') 
 
 
 @webapp.route('/processes', defaults={'sort': 'cpu_percent', 'order': 'desc', 'filter': 'user'})
@@ -183,30 +221,7 @@ def index():
 @webapp.route('/processes/<string:sort>/<string:order>')
 @webapp.route('/processes/<string:sort>/<string:order>/<string:filter>')
 def processes(sort='pid', order='asc', filter='user'):
-    procs = current_service.get_process_list()
-    num_procs = len(procs)
-
-    user_procs = [p for p in procs if p['user'] != 'root']
-    num_user_procs = len(user_procs)
-    if filter == 'user':
-        procs = user_procs
-
-    procs.sort(
-        key=lambda x: x.get(sort),
-        reverse=True if order != 'asc' else False
-    )
-
-    return render_template(
-        'processes.html',
-        processes=procs,
-        sort=sort,
-        order=order,
-        filter=filter,
-        num_procs=num_procs,
-        num_user_procs=num_user_procs,
-        page='processes',
-        is_xhr=request.is_xhr
-    )
+    return render_template('processes.html')
 
 
 @webapp.route('/process/<int:pid>', defaults={'section': 'overview'})
@@ -313,23 +328,16 @@ def view_networks():
 
 @webapp.route('/disks')
 def view_disks():
-    disks = current_service.get_disks(all_partitions=True)
-    io_counters = current_service.get_disks_counters().items()
-    io_counters.sort(key=lambda x: x[1]['read_count'], reverse=True)
     return render_template(
-        'disks.html',
-        page='disks',
-        disks=disks,
-        io_counters=io_counters,
-        is_xhr=request.is_xhr
-    )
-
+        'disks.html')
 
 @webapp.route('/logs')
 def view_logs():
     available_logs = current_service.get_logs()
     available_logs.sort(cmp=lambda x1, x2: locale.strcoll(x1['path'], x2['path']))
 
+    #return render_template(
+    #    'logs.html')
     return render_template(
         'logs.html',
         page='logs',

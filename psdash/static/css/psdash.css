@@ -200,6 +200,10 @@ a:hover {
     font-size: 12px;
 }
 
+.box-header {
+   background-color: #dee2ea;
+   color : black ;
+ }
 #psdash .table-container .content .main-content div.box .box-header {
     margin-bottom: 10px;
 }

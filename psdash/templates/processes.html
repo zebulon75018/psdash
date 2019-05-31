@@ -13,10 +13,14 @@ input {
 var datatable;
 $(document).ready( function () {
     console.log(" Datatable ");
-    datatable = $('#myTable').DataTable();
+    datatable = $('#myTable').DataTable(  {   paging: false,
+        fixedHeader: true,
+      colReorder: true,
+ } );
+
     $('#myTable thead th').each( function () {
         var title = $(this).text();
-        $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+        $(this).html( $(this).html()+ '<input type="text" placeholder="Search" />' );
     } );
 
     // Apply the search
@@ -44,18 +48,6 @@ $(document).ready( function () {
             <span>Processes</span>
         </div>
         <div class="box-content">
-            <ul class="nav nav-tabs" role="tablist">
-                <li {% if filter == "all" %}class="active"{% endif %}>
-                    <a href="{{ url_for(".processes", sort=sort, order=order, filter="all") }}">
-                        All <span class="badge all">{{ num_procs }}</span>
-                    </a>
-                </li>
-                <li {% if filter == "user" %}class="active"{% endif %}>
-                    <a href="{{ url_for(".processes", sort=sort, order=order, filter="user") }}">
-                        User processes <span class="badge">{{ num_user_procs }}</span>
-                    </a>
-                </li>
-            </ul>
             <table id="myTable" class="table table-hover"  cellspacing="0" width="100%">
                 <thead>
                     <tr>
@@ -66,7 +58,7 @@ $(document).ready( function () {
                            Name
                         </th>
                         <th>
-                            User>
+                            User
                         </th>
                         <th>
                             Status
@@ -89,22 +81,6 @@ $(document).ready( function () {
                     </tr>
                 </thead>
                 <tbody>
-                    {% for p in processes %}
-                        <tr>
-                          <td>{{ p.pid }}</td>
-                          <td title="{{ p.cmdline.decode("utf-8") }}">
-                              <a href="{{ url_for(".process", pid=p.pid) }}">{{ p.name.decode("utf-8") }}</a><br/>
-                              <small>{{ p.cmdline.decode("utf-8")|truncate(110) }}</small>
-                          </td>
-                          <td>{{ p.user or "-" }}</td>
-                          <td>{{ p.status }}</td>
-                          <td>{{ p.created|fromtimestamp }}</td>
-                          <td>{{ p.mem_rss|filesizeformat }}</td>
-                          <td>{{ p.mem_vms|filesizeformat }}</td>
-                          <td>{{ p.mem_percent|round }}</td>
-                          <td>{{ p.cpu_percent }}</td>
-                        </tr>
-                    {% endfor %}
                 </tbody>
             </table>
         </div>

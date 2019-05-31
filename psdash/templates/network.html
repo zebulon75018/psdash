@@ -22,7 +22,8 @@
                         <th>TX/s</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="listnetwork_interfaces" data="name ip bytes_sent bytes_recv packets_sent packets_recv errors_in errors_out dropped_in dropped_out ">
+		<!--
                     {% for io in network_interfaces %}
                     <tr>
                         <td>{{ io.name.decode("utf-8") }}</td>
@@ -39,6 +40,7 @@
                         <td>{{ io.recv_rate|default(0)|filesizeformat }}</td>
                     </tr>
                     {% endfor %}
+	-->
                 </tbody>
             </table>
         </div>

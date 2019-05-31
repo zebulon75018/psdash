@@ -5,6 +5,26 @@ function filesizeformat  (bytes) {
   return (bytes/Math.pow(1024, e)).toFixed(2)+' '+' KMGTP'.charAt(e)+'B';
 }
 
+function fromtimestamp(d) {
+    var date = new Date(d*1000);
+
+    var month = date.getMonth() + 1;
+    var day = date.getDate();
+    var hour = date.getHours();
+    var min = date.getMinutes();
+    var sec = date.getSeconds();
+
+    month = (month < 10 ? "0" : "") + month;
+    day = (day < 10 ? "0" : "") + day;
+    hour = (hour < 10 ? "0" : "") + hour;
+    min = (min < 10 ? "0" : "") + min;
+    sec = (sec < 10 ? "0" : "") + sec;
+
+    var str = date.getFullYear() + "-" + month + "-" + day + "_" +  hour + ":" + min + ":" + sec;
+
+    return str;
+ }
+
 function escape_regexp(str) {
   return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 }
@@ -131,31 +151,21 @@ function init_updater() {
             dataType: "html",
             success: function(resp){
               var data = JSON.parse(resp);
-	      //console.log(data);
               if (data["type"]=="process") {
-		//console.log(data["data"]);
 		ddata = [];
 		for( var i= 0; i< data["data"].length; i++)
 		{
 		   d = data["data"][i];
-		   ddata.push([ d["pid"],d["name"],d["user"],d["status"],d["created"],"","",d["mem_percent"],d["cpu_percent"]]);
-		   //ddata.push([ "","","","","","","","",""]);
-
-
-/*
-                          </td>
-                          <td>{{ p.user or "-" }}</td>
-                          <td>{{ p.status }}</td>
-                          <td>{{ p.created|fromtimestamp }}</td>
-                          <td>{{ p.mem_rss|filesizeformat }}</td>
-                          <td>{{ p.mem_vms|filesizeformat }}</td>
-                          <td>{{ p.mem_percent|round }}</td>
-                          <td>{{ p.cpu_percent }}</td>
-*/
-
+		   ddata.push([ d["pid"],
+				"<a href='/process/"+d["pid"]+"'>"+d["name"]+"</a>",
+				d["user"],
+				d["status"],
+				fromtimestamp(d["created"]),
+				filesizeformat(d["mem_rss"]),
+				filesizeformat(d["mem_vms"]),
+				d["mem_percent"].toFixed(2),d["cpu_percent"]]);
 
 		}
-		console.log(ddata);
 		datatable.clear();
     		datatable.rows.add(ddata);
     		datatable.draw();
@@ -166,7 +176,6 @@ function init_updater() {
                    { 
               		for(var key2 in data[key]) 
 			{
-				//console.log(data[key])
 		   		elm = $("."+key+key2);
 				if (elm.length ==0) { continue; }
 				if ( elm.attr("format") == "filesizeformat" ) {
@@ -186,21 +195,23 @@ function init_updater() {
                    }
 		   if ( Array.isArray(data[key]) )
 		   {
-
 		   	elm = $(".list"+key);
 			if (elm.length ==0) { 
+					console.log(" list key not found " );
 					continue;
 				}
 			if (typeof(elm.attr("data")) !="string")
 			{
+				console.log(" data not string " );
 				continue;
 			}
 			allcol = elm.attr("data").split(" ")
+			
 			allformat = [];
 			if ( elm.attr("format") !== undefined ) {
 				allformat = elm.attr("format").split(" ")
 			}
-			console.log(allformat);
+			//console.log(allformat);
 			result = ""
 			for (var i = 0; i < data[key].length; i++) { 
 			  result += "<tr>"
@@ -210,8 +221,11 @@ function init_updater() {
 				value = data[key][i][allcol[key2]];
 				if (allformat.length>n) {
 				     funcformat = allformat[n];
-				     if ( funcformat !="none" ) {
+				     if ( funcformat =="filesizeformat" ) {
 					value = filesizeformat(value);
+					}
+				    if ( funcformat =="fromtimestamp" ) {
+					value = fromtimestamp(value);
 					}
 				}
 				n++;
@@ -228,7 +242,7 @@ function init_updater() {
         });
     }
 
-    setInterval(update, 30000);
+    setInterval(update, 3000);
 }
 
 function init_connections_filter() {

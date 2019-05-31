@@ -15,7 +15,9 @@
                         <th>Modification time</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="listlogs" data="path size atime mtime"
+                                format="none filesizeformat fromtimestamp fromtimestamp" >
+
                     {% for log in logs %}
                     <tr>
                         <td>
