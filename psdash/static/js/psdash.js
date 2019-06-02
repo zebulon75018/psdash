@@ -146,10 +146,11 @@ function init_updater() {
         if (skip_updates) return;
 
         $.ajax({
-            url: "/json"+location.pathname,
+            url: "/json"+location.pathname+location.search,
             cache: false,
             dataType: "html",
             success: function(resp){
+              $(".spinner").hide();
               var data = JSON.parse(resp);
               if (data["type"]=="process") {
 		ddata = [];
@@ -264,13 +265,12 @@ function init_connections_filter() {
 }
 
 $(document).ready(function() {
+    if ($("#jstree_browse").length !=0 ) return;
     init_connections_filter();
 
-    init_updater();
-	/*
     if($("#log").length == 0) {
         init_updater();
     } else {
         init_log();
-    } */
+    }
 });
