@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+      <link href="/static/css/skin-win7/ui.fancytree.css" rel="stylesheet">
+
+     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" > 
+     </script>
+     <script type="text/javascript" src="/static/js/jquery.fancytree-all.js" >
+     </script>
+
+
+    <div id="disks">
+        <div class="box">
+            <div class="box-header">
+                <span>Browse</span>
+            </div>
+            <div class="box-content">
+		<div id="jstree_browse">
+
+  		</div>
+
+            </div>
+        </div>
+     </div>
+
+<script type="text/javascript">
+ $("#jstree_browse").fancytree({
+  checkbox: true,
+  selectMode: 3,
+  source: {
+    url:
+      "/folder"
+  },
+  lazyLoad: function(event, data) {
+    console.log(event);
+    console.log(data);
+    data.result = {url: "/folder?id="};
+  },
+
+  activate: function(event, data) {
+    $("#statusLine").text(event.type + ": " + data.node);
+  },
+  select: function(event, data) {
+    $("#statusLine").text(
+      event.type + ": " + data.node.isSelected() + " " + data.node
+    );
+  }
+});
+</script>
+{% endblock %}
