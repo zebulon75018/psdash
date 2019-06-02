@@ -1,14 +1,16 @@
 # coding=utf-8
 import logging
 import psutil
+import os
 import socket
 from datetime import datetime, timedelta
 import uuid
 import locale
+import json as jso
 from flask import render_template, request, session, jsonify, Response, Blueprint, current_app, g
 from werkzeug.local import LocalProxy
 from psdash.helpers import socket_families, socket_types
-import json
+import pprint
 
 logger = logging.getLogger('psdash.web')
 webapp = Blueprint('psdash', __name__, static_folder='static')
@@ -111,6 +113,9 @@ def access_denied(e):
 def json_view_logs():
     available_logs = current_service.get_logs()
     available_logs.sort(cmp=lambda x1, x2: locale.strcoll(x1['path'], x2['path']))
+
+    for idx,foo in enumerate(available_logs):
+    	available_logs[idx]["path"] = "<a href='/log?filename=%s'>%s </a>" %( available_logs[idx]["path"], available_logs[idx]["path"])
 
     return jsonify({"logs":available_logs})
 
@@ -333,17 +338,8 @@ def view_disks():
 
 @webapp.route('/logs')
 def view_logs():
-    available_logs = current_service.get_logs()
-    available_logs.sort(cmp=lambda x1, x2: locale.strcoll(x1['path'], x2['path']))
-
-    #return render_template(
-    #    'logs.html')
     return render_template(
-        'logs.html',
-        page='logs',
-        logs=available_logs,
-        is_xhr=request.is_xhr
-    )
+        'logs.html')
 
 
 @webapp.route('/log')
@@ -378,6 +374,31 @@ def search_log():
     except KeyError:
         return 'Could not find log file with given filename', 404
 
+@webapp.route('/browse')
+def view_browse():
+    return render_template('browse.html')
+
+@webapp.route('/folder')
+def folder():
+    root = "/home/zebulon/"
+    #filename = request.args['id']
+    #if filename =="":
+    #	filename = ""
+    filename = ""
+    path = os.path.abspath(root + filename)
+    data = [] 
+    key = 1
+    for fname in sorted(os.listdir(path)):
+	if fname[0] == ".":
+		continue
+	print(fname)
+	if os.path.isdir(os.path.join(path,fname)):
+  		data.append({  "title" : fname, "folder": True, "lazy" : True, "key" : key })
+	else:
+  		data.append({  "title" : fname, "folder": False , "key":key  })
+	key = key + 1
+
+    return Response(jso.dumps(data),  mimetype='application/json')
 
 @webapp.route('/register')
 def register_node():
