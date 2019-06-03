@@ -382,7 +382,7 @@ def view_browse():
 
 @webapp.route('/folder')
 def folder():
-    root = "/home/zebulon/"
+    root = "/home/"
     try:
        	indexdir = request.args['id']
     	path = directory[int(indexdir)] 
