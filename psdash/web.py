@@ -16,6 +16,8 @@ logger = logging.getLogger('psdash.web')
 webapp = Blueprint('psdash', __name__, static_folder='static')
 
 
+directory=  []
+
 def get_current_node():
     return current_app.psdash.get_node(g.node)
 
@@ -381,22 +383,24 @@ def view_browse():
 @webapp.route('/folder')
 def folder():
     root = "/home/zebulon/"
-    #filename = request.args['id']
-    #if filename =="":
-    #	filename = ""
-    filename = ""
-    path = os.path.abspath(root + filename)
+    try:
+       	indexdir = request.args['id']
+    	path = directory[int(indexdir)] 
+    except Exception as e :
+        print(e)
+    	path = os.path.abspath(root)
+
     data = [] 
-    key = 1
+    key = len(directory)
     for fname in sorted(os.listdir(path)):
 	if fname[0] == ".":
 		continue
-	print(fname)
 	if os.path.isdir(os.path.join(path,fname)):
+		directory.append(os.path.join(path,fname))
   		data.append({  "title" : fname, "folder": True, "lazy" : True, "key" : key })
+		key = key + 1
 	else:
   		data.append({  "title" : fname, "folder": False , "key":key  })
-	key = key + 1
 
     return Response(jso.dumps(data),  mimetype='application/json')
 
