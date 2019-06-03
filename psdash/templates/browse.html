@@ -33,9 +33,10 @@
       "/folder"
   },
   lazyLoad: function(event, data) {
+    $(".spinner").hide();
     console.log(event);
     console.log(data);
-    data.result = {url: "/folder?id="};
+    data.result = {url: "/folder?id="+data.node.key};
   },
 
   activate: function(event, data) {

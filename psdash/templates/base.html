@@ -10,12 +10,12 @@
         <link href='http://fonts.googleapis.com/css?family=Ubuntu:300,400' rel='stylesheet' type='text/css'>
 
           <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
-        <link href="https://yadcf-showcase.appspot.com/resources/css/jquery.dataTables.yadcf.0.9.2.css" rel="stylesheet">
+<!---        <link href="https://yadcf-showcase.appspot.com/resources/css/jquery.dataTables.yadcf.0.9.2.css" rel="stylesheet"> -->
 
         <link href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" rel="stylesheet">
           <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"> </script> 
 
-          <script src="https://cdnjs.cloudflare.com/ajax/libs/yadcf/0.9.4/jquery.dataTables.yadcf.js"> </script>
+       <!---   <script src="https://cdnjs.cloudflare.com/ajax/libs/yadcf/0.9.4/jquery.dataTables.yadcf.js"> </script> -->
           <link href="https://cdn.datatables.net/colreorder/1.5.1/css/colReorder.dataTables.min.css" rel="stylesheet"> 
           <script src="https://cdn.datatables.net/colreorder/1.5.1/js/dataTables.colReorder.min.js"></script>
           <link href="https://cdn.datatables.net/fixedheader/3.1.5/css/fixedHeader.dataTables.min.css" rel="stylesheet"> 
@@ -95,9 +95,24 @@
                                     <span class="option-text">Logs</span>
                                 </a>
                             </li>
+			    <li {% if page == "browse" %}class="active"{% endif %}>
+                                <a href="{{ url_for(".view_browse") }}">
+                                    <span class="glyphicon glyphicon-book"></span>
+                                    <span class="option-text">Browse</span>
+                                </a>
+                            </li>
+
                         </ul>
                     </div>
                     <div class="main-content">
+
+<div class="spinner">
+  <div class="rect1"></div>
+  <div class="rect2"></div>
+  <div class="rect3"></div>
+  <div class="rect4"></div>
+  <div class="rect5"></div>
+</div>
                         {% block content %}{% endblock %}
                     </div>
                 </div>
@@ -109,5 +124,6 @@
         <!-- Include all compiled plugins (below), or include individual files as needed -->
         <script src="{{ url_for(".static", filename="js/bootstrap.min.js") }}"></script>
         <script src="{{ url_for(".static", filename="js/psdash.js") }}"></script>
+
     </body>
 </html>
