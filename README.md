@@ -1,5 +1,9 @@
 # psdash
 
+*Adding datatable support, 
+*Adding json call 
+*Adding browse menu
+
 [![Build Status](https://travis-ci.org/Jahaja/psdash.svg?branch=master)](https://travis-ci.org/Jahaja/psdash)
 [![Coverage Status](https://coveralls.io/repos/Jahaja/psdash/badge.png?branch=master)](https://coveralls.io/r/Jahaja/psdash?branch=master)
 
@@ -146,6 +150,9 @@ Tailing a log:
 Searching a log:
 ![Log search](docs/screenshots/log_search.png)
 
+Browse file system:
+![Browse](docs/screenshots/browse.png)
+ 
 ## License
 Released under CC0 (Public Domain Dedication).
 
