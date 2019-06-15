@@ -400,7 +400,15 @@ def folder():
   		data.append({  "title" : fname, "folder": True, "lazy" : True, "key" : key })
 		key = key + 1
 	else:
-  		data.append({  "title" : fname, "folder": False , "key":key  })
+		filestat = os.stat( os.path.join(path,fname) )
+
+  		data.append({  "title" : fname, "folder": False , "key":key , "data":{
+			 "st_mode":filestat.st_mode, "st_ino":filestat.st_ino, "st_dev":filestat.st_dev,
+			 "st_nlink":filestat.st_nlink, "st_uid":filestat.st_uid, "st_gid":filestat.st_gid,
+			 "st_size":filestat.st_size, "st_atime":filestat.st_atime, "st_mtime":filestat.st_mtime,
+			 "st_ctime":filestat.st_ctime
+			} 
+		 })
 
     return Response(jso.dumps(data),  mimetype='application/json')
 
