@@ -378,11 +378,18 @@ def search_log():
 
 @webapp.route('/browse')
 def view_browse():
-    return render_template('browse.html')
+    return render_template('browse.html', node=g.node)
 
 @webapp.route('/folder')
 def folder():
-    root = "/home/"
+    try:
+    	data = current_service.folder(request.args['id'])
+    except Exception as e :
+    	data = current_service.folder()
+
+    return Response(jso.dumps(data),  mimetype='application/json')
+
+    """
     try:
        	indexdir = request.args['id']
     	path = directory[int(indexdir)] 
@@ -411,6 +418,7 @@ def folder():
 		 })
 
     return Response(jso.dumps(data),  mimetype='application/json')
+    """
 
 @webapp.route('/register')
 def register_node():

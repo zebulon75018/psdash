@@ -59,6 +59,7 @@ class LocalNode(Node):
         self.net_io_counters = NetIOCounters()
         self.logs = Logs()
 
+
     def get_id(self):
         return 'localhost'
 
@@ -69,6 +70,7 @@ class LocalNode(Node):
 class LocalService(object):
     def __init__(self, node):
         self.node = node
+	self.directory=  []
 
     def get_sysinfo(self):
         uptime = int(time.time() - psutil.boot_time())
@@ -367,3 +369,35 @@ class LocalService(object):
             'content': res
         }
         return data
+
+    def folder(self,indexdir=None):
+        root = "/home/"
+        #try:
+        #    indexdir = request.args['id']
+        #except Exception as e :
+        #    print(e)
+        if indexdir is None:
+                path = os.path.abspath(root)
+        else:
+                path = self.directory[int(indexdir)]
+            data = []
+            key = len(self.directory)
+            for fname in sorted(os.listdir(path)):
+                if fname[0] == ".":
+                        continue
+                if os.path.isdir(os.path.join(path,fname)):
+                    self.directory.append(os.path.join(path,fname))
+                    data.append({  "title" : fname, "folder": True, "lazy" : True, "key" : key })
+                    key = key + 1
+                else:
+                    filestat = os.stat( os.path.join(path,fname) )
+
+                data.append({  "title" : fname, "folder": False , "key":key , "data":{
+                            "st_mode":filestat.st_mode, "st_ino":filestat.st_ino, "st_dev":filestat.st_dev,
+                            "st_nlink":filestat.st_nlink, "st_uid":filestat.st_uid, "st_gid":filestat.st_gid,
+                            "st_size":filestat.st_size, "st_atime":filestat.st_atime, "st_mtime":filestat.st_mtime,
+                            "st_ctime":filestat.st_ctime
+                            }
+                    })
+        return data
+
