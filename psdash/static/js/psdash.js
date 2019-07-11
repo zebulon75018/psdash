@@ -179,6 +179,13 @@ function init_updater() {
 			{
 		   		elm = $("."+key+key2);
 				if (elm.length ==0) { continue; }
+				if ( elm.attr("gauge") != undefined ) 
+				{
+					chartSpeed=allchart[key+key2];
+ 					point = chartSpeed.series[0].points[0];
+    					newVal = parseFloat(data[key][key2]);
+    					point.update(newVal);
+				}
 				if ( elm.attr("format") == "filesizeformat" ) {
 		   		    elm.html(filesizeformat(data[key][key2]));
 				} else {
