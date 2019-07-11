@@ -57,13 +57,13 @@
   selectMode: 3,
   source: {
     url:
-      "/folder"
+      "/folder?node={{node}}"
   },
   lazyLoad: function(event, data) {
     $(".spinner").hide();
     console.log(event);
     console.log(data);
-    data.result = {url: "/folder?id="+data.node.key};
+    data.result = {url: "/folder?node={{node}}&id="+data.node.key};
   },
 
   activate: function(event, data) {
